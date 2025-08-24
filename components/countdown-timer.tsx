@@ -86,7 +86,7 @@ export default function CountdownTimer({ className }: CountdownTimerProps) {
   }
 
   const progress = (timeLeft / totalTime) * 100
-  const radius = 120
+  const radius = 110
   const circumference = 2 * Math.PI * radius
   const strokeDashoffset = circumference * (1 - progress / 100)
 
@@ -113,16 +113,17 @@ export default function CountdownTimer({ className }: CountdownTimerProps) {
         )}
       </button>
 
-      <div className="mb-12">
-        <img src="/hackathon-logo-placeholder.png" alt="Hackathon Logo" className="h-20 w-auto" />
+      <div className="mb-4 flex items-center gap-8">
+        <img src="/codefest-logo.png" alt="Hackathon Logo" className="h-24 w-auto" />
+        <img src="/algothon-logo.png" alt="Sponsor 1" className="h-64 w-auto" />
       </div>
 
-      <div className="relative mb-12">
-        <svg className="w-80 h-80 transform -rotate-90" viewBox="0 0 240 240">
+      <div className="relative mb-8">
+        <svg className="w-96 h-96 transform -rotate-90" viewBox="0 0 240 240">
           <circle
             cx="120"
             cy="120"
-            r="120"
+            r="110"
             stroke="currentColor"
             strokeWidth="4"
             fill="none"
@@ -131,7 +132,7 @@ export default function CountdownTimer({ className }: CountdownTimerProps) {
           <circle
             cx="120"
             cy="120"
-            r="120"
+            r="110"
             stroke="currentColor"
             strokeWidth="4"
             fill="none"
@@ -165,6 +166,10 @@ export default function CountdownTimer({ className }: CountdownTimerProps) {
           Start Countdown
         </Button>
       )}
+
+      <div className="mt-8">
+        <img src="/cssc-logo.png" alt="Sponsor 2" className="h-16 w-auto opacity-80" />
+      </div>
 
       <div className="absolute bottom-8 flex items-center gap-8">
         {/* <img src="/generic-sponsor-logo-1.png" alt="Sponsor 1" className="h-10 w-auto opacity-60" />
