@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 
-const COUNTDOWN_MINUTES = 25 // Change this to set the countdown duration
+const COUNTDOWN_MINUTES = 1 // Change this to set the countdown duration
 const COUNTDOWN_SECONDS = 0
 
 interface CountdownTimerProps {
@@ -86,9 +86,9 @@ export default function CountdownTimer({ className }: CountdownTimerProps) {
   }
 
   const progress = (timeLeft / totalTime) * 100
-  const baseRadius = 120
-  const currentRadius = baseRadius * (progress / 100)
-  const circumference = 2 * Math.PI * currentRadius
+  const radius = 120
+  const circumference = 2 * Math.PI * radius
+  const strokeDashoffset = circumference * (1 - progress / 100)
 
   return (
     <div className={`min-h-screen bg-background flex flex-col items-center justify-center p-8 relative ${className}`}>
@@ -131,12 +131,14 @@ export default function CountdownTimer({ className }: CountdownTimerProps) {
           <circle
             cx="120"
             cy="120"
-            r={currentRadius}
+            r="120"
             stroke="currentColor"
             strokeWidth="4"
             fill="none"
             className="text-accent transition-all duration-1000 ease-linear"
             strokeLinecap="round"
+            strokeDasharray={circumference}
+            strokeDashoffset={strokeDashoffset}
           />
         </svg>
 
@@ -144,7 +146,6 @@ export default function CountdownTimer({ className }: CountdownTimerProps) {
           {isFinished ? (
             <div className="text-center">
               <div className="text-4xl font-bold text-accent mb-2">Time's up!</div>
-              <div className="text-xl text-muted-foreground">Hackathon Complete</div>
             </div>
           ) : (
             <div className="text-center">
@@ -166,8 +167,8 @@ export default function CountdownTimer({ className }: CountdownTimerProps) {
       )}
 
       <div className="absolute bottom-8 flex items-center gap-8">
-        <img src="/generic-sponsor-logo-1.png" alt="Sponsor 1" className="h-10 w-auto opacity-60" />
-        <img src="/generic-sponsor-logo-2.png" alt="Sponsor 2" className="h-10 w-auto opacity-60" />
+        {/* <img src="/generic-sponsor-logo-1.png" alt="Sponsor 1" className="h-10 w-auto opacity-60" />
+        <img src="/generic-sponsor-logo-2.png" alt="Sponsor 2" className="h-10 w-auto opacity-60" /> */}
       </div>
     </div>
   )
