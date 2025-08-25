@@ -220,6 +220,7 @@ export default function CountdownTimer({ className }: CountdownTimerProps) {
           className="h-24 w-auto"
         />
         <img src="/algothon-logo.png" alt="Sponsor 1" className="h-64 w-auto" />
+        <img src="/gtn-logo.png" alt="GTN Logo" className="h-32 w-auto" />
       </div>
 
       <div className="relative mb-8">
