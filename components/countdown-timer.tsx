@@ -168,6 +168,13 @@ export default function CountdownTimer({ className }: CountdownTimerProps) {
       .padStart(2, "0")}`;
   };
 
+  const stopTimer = () => {
+    setIsActive(false);
+    setIsFinished(false);
+    setTimeLeft(totalTime);
+    localStorage.removeItem("timerState");
+  };
+
   const progress = (timeLeft / totalTime) * 100;
   const radius = 110;
   const circumference = 2 * Math.PI * radius;
@@ -275,6 +282,17 @@ export default function CountdownTimer({ className }: CountdownTimerProps) {
           className="bg-accent text-accent-foreground hover:bg-accent/90 text-xl px-12 py-6 rounded-full font-semibold transition-all duration-200 hover:scale-105"
         >
           Start Countdown
+        </Button>
+      )}
+
+      {/* Show Stop button when timer is running */}
+      {isActive && !isFinished && (
+        <Button
+          onClick={stopTimer}
+          size="lg"
+          className="bg-destructive text-destructive-foreground hover:bg-destructive/90 text-xl px-12 py-6 rounded-full font-semibold transition-all duration-200 hover:scale-105 mt-4"
+        >
+          Stop
         </Button>
       )}
 
