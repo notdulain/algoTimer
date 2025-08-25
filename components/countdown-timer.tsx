@@ -9,6 +9,7 @@ interface CountdownTimerProps {
   className?: string;
 }
 
+//random
 export default function CountdownTimer({ className }: CountdownTimerProps) {
   const totalTime = COUNTDOWN_MINUTES * 60 + COUNTDOWN_SECONDS;
   const [timeLeft, setTimeLeft] = useState(totalTime);
