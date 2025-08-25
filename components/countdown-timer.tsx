@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-const COUNTDOWN_MINUTES = 105; // 7 hours in minutes
+const COUNTDOWN_MINUTES = 85; // 7 hours in minutes
 const COUNTDOWN_SECONDS = 0;
 
 interface CountdownTimerProps {
