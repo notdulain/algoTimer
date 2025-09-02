@@ -2,6 +2,16 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 const COUNTDOWN_MINUTES = 85; // 7 hours in minutes
 const COUNTDOWN_SECONDS = 0;
 
@@ -11,12 +21,17 @@ interface CountdownTimerProps {
 
 //random
 export default function CountdownTimer({ className }: CountdownTimerProps) {
-  const totalTime = COUNTDOWN_MINUTES * 60 + COUNTDOWN_SECONDS;
-  const [timeLeft, setTimeLeft] = useState(totalTime);
+  const DEFAULT_TOTAL_TIME = COUNTDOWN_MINUTES * 60 + COUNTDOWN_SECONDS;
+  const [totalTime, setTotalTime] = useState(DEFAULT_TOTAL_TIME);
+  const [timeLeft, setTimeLeft] = useState(DEFAULT_TOTAL_TIME);
   const [isActive, setIsActive] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [isTimeDialogOpen, setIsTimeDialogOpen] = useState(false);
+  const [hoursInput, setHoursInput] = useState(0);
+  const [minutesInput, setMinutesInput] = useState(0);
+  const [secondsInput, setSecondsInput] = useState(0);
 
   // Add this useEffect to load saved state on component mount
   useEffect(() => {
@@ -26,7 +41,10 @@ export default function CountdownTimer({ className }: CountdownTimerProps) {
         JSON.parse(savedState);
 
       // Use the saved total time if available, otherwise use the default
-      const effectiveTotalTime = savedTotalTime || totalTime;
+      const effectiveTotalTime = savedTotalTime || DEFAULT_TOTAL_TIME;
+      if (savedTotalTime) {
+        setTotalTime(savedTotalTime);
+      }
 
       // If timer was active, calculate remaining time based on end timestamp
       if (savedIsActive && savedEndTime) {
@@ -52,7 +70,7 @@ export default function CountdownTimer({ className }: CountdownTimerProps) {
         setIsActive(savedIsActive);
       }
     }
-  }, [totalTime]);
+  }, [DEFAULT_TOTAL_TIME]);
 
   // Modify your existing useEffect to save state changes
   useEffect(() => {
@@ -176,6 +194,43 @@ export default function CountdownTimer({ className }: CountdownTimerProps) {
     localStorage.removeItem("timerState");
   };
 
+  const applyCustomTime = () => {
+    const sanitizedHours = Number.isFinite(hoursInput) ? Math.max(0, hoursInput) : 0;
+    const sanitizedMinutes = Number.isFinite(minutesInput)
+      ? Math.min(59, Math.max(0, minutesInput))
+      : 0;
+    const sanitizedSeconds = Number.isFinite(secondsInput)
+      ? Math.min(59, Math.max(0, secondsInput))
+      : 0;
+
+    const newTotalSeconds =
+      sanitizedHours * 3600 + sanitizedMinutes * 60 + sanitizedSeconds;
+
+    if (newTotalSeconds <= 0) {
+      // No-op for zero time; keep dialog open for correction
+      return;
+    }
+
+    // Only allow changing while not running
+    if (isActive) {
+      return;
+    }
+
+    setTotalTime(newTotalSeconds);
+    setTimeLeft(newTotalSeconds);
+    setIsFinished(false);
+    localStorage.setItem(
+      "timerState",
+      JSON.stringify({
+        savedTimeLeft: newTotalSeconds,
+        savedIsActive: false,
+        savedEndTime: null,
+        savedTotalTime: newTotalSeconds,
+      })
+    );
+    setIsTimeDialogOpen(false);
+  };
+
   const progress = (timeLeft / totalTime) * 100;
   const radius = 110;
   const circumference = 2 * Math.PI * radius;
@@ -185,41 +240,109 @@ export default function CountdownTimer({ className }: CountdownTimerProps) {
     <div
       className={`min-h-screen bg-background flex flex-col items-center justify-center p-8 relative ${className}`}
     >
-      <button
-        onClick={toggleFullscreen}
-        className="absolute top-4 right-4 p-2 text-muted-foreground hover:text-foreground transition-colors z-10"
-        title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
-      >
-        {isFullscreen ? (
-          <svg
-            className="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        ) : (
-          <svg
-            className="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
-            />
-          </svg>
-        )}
-      </button>
+      <div className="absolute top-4 right-4 flex items-center gap-2 z-10">
+        <Dialog open={isTimeDialogOpen} onOpenChange={setIsTimeDialogOpen}>
+          <DialogTrigger asChild>
+            <button
+              className="p-2 text-muted-foreground hover:text-foreground transition-colors"
+              title="Set Time"
+              disabled={isActive}
+              onClick={() => {
+                setHoursInput(Math.floor(totalTime / 3600));
+                setMinutesInput(Math.floor((totalTime % 3600) / 60));
+                setSecondsInput(totalTime % 60);
+              }}
+            >
+              <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Set countdown time</DialogTitle>
+            </DialogHeader>
+            <div className="grid grid-cols-3 gap-4 py-2">
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="hours">Hours</Label>
+                <Input
+                  id="hours"
+                  type="number"
+                  min={0}
+                  value={hoursInput}
+                  onChange={(e) => setHoursInput(parseInt(e.target.value || "0", 10))}
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="minutes">Minutes</Label>
+                <Input
+                  id="minutes"
+                  type="number"
+                  min={0}
+                  max={59}
+                  value={minutesInput}
+                  onChange={(e) => setMinutesInput(parseInt(e.target.value || "0", 10))}
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="seconds">Seconds</Label>
+                <Input
+                  id="seconds"
+                  type="number"
+                  min={0}
+                  max={59}
+                  value={secondsInput}
+                  onChange={(e) => setSecondsInput(parseInt(e.target.value || "0", 10))}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button onClick={applyCustomTime} disabled={isActive}>Apply</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        <button
+          onClick={toggleFullscreen}
+          className="p-2 text-muted-foreground hover:text-foreground transition-colors"
+          title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+        >
+          {isFullscreen ? (
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          ) : (
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
+              />
+            </svg>
+          )}
+        </button>
+      </div>
 
       <div className="mb-4 flex items-center gap-8">
         <img
